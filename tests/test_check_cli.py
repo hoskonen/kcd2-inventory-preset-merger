@@ -23,7 +23,7 @@ class CheckCliTests(unittest.TestCase):
         self.assertIn("  Mod: mod_check_a", output)
         self.assertIn("    Child: PresetItem bandage_classic", output)
         self.assertIn("No action required.", output)
-        self.assertIn("No InventoryPreset conflicts requiring action were detected.", output)
+        self.assertNotIn("No InventoryPreset conflicts requiring action were detected.", output)
 
     def test_check_verbose_shows_full_provenance(self):
         stdout = StringIO()

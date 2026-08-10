@@ -7,6 +7,13 @@ from typing import Any
 
 from .checker import CheckSummary, check_mods
 from .conflicts import analyze_presets, build_preset_index
+from .generator import (
+    DEFAULT_GENERATED_MOD_ID,
+    DEFAULT_GENERATED_MOD_NAME,
+    GenerationBlocked,
+    generate_compatibility_mod,
+    source_mod_roots,
+)
 from .models import ChildFinding, PlannedChild, PlannedPreset, PresetAnalysis, PresetAttributeFinding
 from .planner import build_merge_plan, merge_plan_to_report, write_merge_plan_report
 from .scanner import scan_mods
@@ -25,6 +32,8 @@ def main(argv: list[str] | None = None) -> int:
         return _preview_command(args)
     if args.command == "check":
         return _check_command(args)
+    if args.command == "generate":
+        return _generate_command(args)
 
     parser.print_help()
     return 2
@@ -85,6 +94,34 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         "--verbose",
         action="store_true",
         help="Show safe overlaps and full child provenance.",
+    )
+
+    generate_parser = subparsers.add_parser("generate", help="Generate a separate InventoryPreset compatibility mod.")
+    generate_parser.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="Path to JSON config file. Defaults to ./config.json.",
+    )
+    generate_parser.add_argument(
+        "--mods-path",
+        type=Path,
+        help="Override the Mods directory from config.",
+    )
+    generate_parser.add_argument(
+        "--output-path",
+        type=Path,
+        help="Directory where the generated mod folder should be written. Defaults to config output_path or ./output.",
+    )
+    generate_parser.add_argument(
+        "--generated-mod-name",
+        default=None,
+        help=f"Generated mod folder/display name. Defaults to config generated_mod_name or {DEFAULT_GENERATED_MOD_NAME}.",
+    )
+    generate_parser.add_argument(
+        "--generated-mod-id",
+        default=None,
+        help=f"Generated mod id and Data subfolder. Defaults to config generated_mod_id or {DEFAULT_GENERATED_MOD_ID}.",
     )
 
     return parser
@@ -185,6 +222,48 @@ def _check_command(args: argparse.Namespace) -> int:
     return 1 if summary.conflict_count or summary.parse_error_count else 0
 
 
+def _generate_command(args: argparse.Namespace) -> int:
+    config = _load_config(args.config)
+    mods_path = args.mods_path or _config_path(config, "mods_path")
+    if mods_path is None:
+        print("No mods_path provided. Set it in config.json or pass --mods-path.")
+        return 2
+
+    mods_path = mods_path.expanduser().resolve()
+    output_path = (args.output_path or _config_path(config, "output_path") or Path("output")).expanduser().resolve()
+    generated_mod_name = args.generated_mod_name or config.get("generated_mod_name") or DEFAULT_GENERATED_MOD_NAME
+    generated_mod_id = args.generated_mod_id or config.get("generated_mod_id") or DEFAULT_GENERATED_MOD_ID
+
+    scan_result = scan_mods(mods_path)
+    plan = build_merge_plan(scan_result)
+
+    try:
+        mod_root = generate_compatibility_mod(
+            plan,
+            output_path=output_path,
+            generated_mod_name=generated_mod_name,
+            generated_mod_id=generated_mod_id,
+            source_mod_paths=source_mod_roots(mods_path, scan_result.files),
+        )
+    except GenerationBlocked as exc:
+        print("InventoryPreset compatibility generation blocked.")
+        print(str(exc))
+        print("No compatibility mod was written.")
+        return 1
+
+    if mod_root is None:
+        print("No InventoryPreset compatibility mod generated.")
+        print("No mechanically safe generation candidates were found.")
+        print("Runtime-safe additive overlaps are intentionally not generated.")
+        return 0
+
+    print("Generated InventoryPreset compatibility mod.")
+    print(f"Output: {mod_root}")
+    print(f"XML: {mod_root / 'Data' / generated_mod_id / 'Libs' / 'Tables' / 'item' / 'InventoryPreset__merged.xml'}")
+    print(f"Report: {mod_root / 'merge-report.json'}")
+    return 0
+
+
 def _load_config(config_path: Path) -> dict[str, Any]:
     if not config_path.exists():
         return {}
@@ -242,7 +321,6 @@ def _print_check_summary(summary: CheckSummary, *, verbose: bool) -> None:
     else:
         print("")
         print("No action required.")
-        print("No InventoryPreset conflicts requiring action were detected.")
 
 
 def _print_check_category(label: str, presets: tuple[PlannedPreset, ...]) -> None:

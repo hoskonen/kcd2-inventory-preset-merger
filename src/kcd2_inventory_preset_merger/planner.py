@@ -41,7 +41,7 @@ def build_merge_plan(scan_result: ScanResult) -> MergePlan:
             runtime_safe_overlaps.append(planned)
         elif planned.status == "safe_generation_candidate":
             safe_presets.append(planned)
-        else:
+        elif planned.status == "unresolved":
             unresolved_presets.append(planned)
 
     return MergePlan(
@@ -151,7 +151,7 @@ def _planned_status(unresolved_reasons: list[str], children: tuple[PlannedChild,
         return "unresolved"
     if children:
         return "runtime_safe_additive_overlap"
-    return "safe_generation_candidate"
+    return "no_generation_needed"
 
 
 def _resolved_preset_attributes(contributions: tuple[PresetRecord, ...]) -> tuple[tuple[str, str], ...]:

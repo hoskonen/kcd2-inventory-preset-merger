@@ -1,0 +1,59 @@
+{
+  "generated_layout": {
+    "manifest": "mod.manifest",
+    "report": "merge-report.json",
+    "xml": "Data/inventorypresetmerge/Libs/Tables/item/InventoryPreset__merged.xml"
+  },
+  "generated_mod_id": "inventorypresetmerge",
+  "generated_mod_name": "InventoryPresetMerge",
+  "generation_blocked": false,
+  "parse_issues": [],
+  "path_issues": [],
+  "recovery_issues": [],
+  "runtime_safe_additive_overlaps": [],
+  "runtime_semantics_note": "synthetic safe generation fixture",
+  "safe_presets": [
+    {
+      "attributes": [
+        [
+          "Name",
+          "inventory_generated_safe_fixture"
+        ],
+        [
+          "Mode",
+          "All"
+        ],
+        [
+          "Health",
+          "1"
+        ]
+      ],
+      "children": [
+        {
+          "attributes": [
+            [
+              "Name",
+              "custom_safe_ref"
+            ]
+          ],
+          "source_child_index": 0,
+          "source_file": "synthetic_mod_a/Data/Libs/Tables/item/InventoryPreset__synthetic.xml",
+          "source_mod": "synthetic_mod_a",
+          "source_preset_index": 0,
+          "tag": "InventoryPresetRef"
+        }
+      ],
+      "diagnostics": [
+        "synthetic safe generation fixture for artifact validation"
+      ],
+      "name": "inventory_generated_safe_fixture",
+      "source_mods": [
+        "synthetic_mod_a"
+      ],
+      "status": "safe_generation_candidate",
+      "unresolved_reasons": []
+    }
+  ],
+  "unresolved_presets": [],
+  "would_generate_xml": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<database name=\"barbora\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"InventoryPreset.xsd\">\n    <InventoryPresets version=\"2\">\n        <InventoryPreset Name=\"inventory_generated_safe_fixture\" Mode=\"All\" Health=\"1\">\n            <InventoryPresetRef Name=\"custom_safe_ref\" />\n        </InventoryPreset>\n    </InventoryPresets>\n</database>\n"
+}
