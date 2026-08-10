@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<database>
+    <InventoryPresets version="2">
+        <InventoryPreset Name="inventory_broken">
+            <PresetItem Name="broken" Amount="1"/>
+        </InventoryPreset>
+    </InventoryPresets>

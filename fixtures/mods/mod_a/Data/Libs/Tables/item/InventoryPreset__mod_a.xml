@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="barbora" xsi:noNamespaceSchemaLocation="InventoryPreset.xsd">
+    <InventoryPresets version="2">
+        <InventoryPreset Name="inventory_shop_commonMerchant" Mode="All" Health="1">
+            <PresetItem Name="apple" Amount="1" Quality="2"/>
+            <InventoryPresetRef Name="inventory_lantern_old_merchant"/>
+        </InventoryPreset>
+        <InventoryPreset Name="inventory_shop_commonBlacksmith" Mode="All" Health="1">
+            <PresetItem Name="hammer" Amount="1"/>
+        </InventoryPreset>
+        <InventoryPreset Name="inventory_shop_armorerKHVinna" Mode="All" Health="1">
+            <PresetItem Name="money" Amount="7550"/>
+        </InventoryPreset>
+        <InventoryPreset Name="inventory_only_mod_a">
+            <PresetItem Name="mod_a_unique" Amount="1"/>
+        </InventoryPreset>
+    </InventoryPresets>
+</database>

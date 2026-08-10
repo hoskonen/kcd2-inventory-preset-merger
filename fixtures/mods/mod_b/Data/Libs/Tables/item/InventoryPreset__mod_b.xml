@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="barbora" xsi:noNamespaceSchemaLocation="InventoryPreset.xsd">
+    <InventoryPresets version="2">
+        <InventoryPreset Name="inventory_shop_commonMerchant" Mode="All" Health="1">
+            <PresetItem Name="bread" Amount="2"/>
+            <InventoryPresetRef Name="inventory_outer_garments_ref"/>
+        </InventoryPreset>
+        <InventoryPreset Name="inventory_shop_commonBlacksmith" Mode="All" Health="1">
+            <PresetItem Name="hammer" Amount="1"/>
+            <PresetItem Name="tongs" Amount="1"/>
+        </InventoryPreset>
+        <InventoryPreset Name="inventory_shop_armorerKHVinna" Mode="AmountFraction" ModeValue="0.5" Health="1">
+            <PresetItem Name="money" Amount="5000"/>
+            <PresetItem Name="Gambeson01_og_01" Amount="1" Quality="4" Condition="1"/>
+        </InventoryPreset>
+        <InventoryPreset Name="inventory_only_mod_b">
+            <PresetItem Name="mod_b_unique" Amount="1"/>
+        </InventoryPreset>
+    </InventoryPresets>
+</database>
