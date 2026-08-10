@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 from .conflicts import analyze_presets, build_preset_index
 from .models import (
     MergePlan,
+    LogicalChildVariant,
     ParseIssue,
     PlannedChild,
     PlannedPreset,
@@ -116,7 +117,7 @@ def _plan_preset(analysis: PresetAnalysis) -> PlannedPreset:
     diagnostics.extend(duplicate_messages)
     unresolved_reasons.extend(duplicate_blockers)
 
-    same_name_diagnostics, same_name_blockers = _same_analysis_key_differing_attributes(contributions)
+    same_name_diagnostics, same_name_blockers, logical_child_variants = _same_analysis_key_differing_attributes(contributions)
     diagnostics.extend(same_name_diagnostics)
     unresolved_reasons.extend(same_name_blockers)
 
@@ -143,6 +144,7 @@ def _plan_preset(analysis: PresetAnalysis) -> PlannedPreset:
         source_mods=tuple(sorted({preset.source.mod_name for preset in contributions}, key=str.casefold)),
         unresolved_reasons=tuple(sorted(set(unresolved_reasons), key=str.casefold)),
         diagnostics=tuple(sorted(set(diagnostics), key=str.casefold)),
+        logical_child_variants=logical_child_variants,
     )
 
 
@@ -190,7 +192,9 @@ def _classify_duplicate_children(contributions: tuple[PresetRecord, ...]) -> tup
     return diagnostics, blockers
 
 
-def _same_analysis_key_differing_attributes(contributions: tuple[PresetRecord, ...]) -> tuple[list[str], list[str]]:
+def _same_analysis_key_differing_attributes(
+    contributions: tuple[PresetRecord, ...],
+) -> tuple[list[str], list[str], tuple[LogicalChildVariant, ...]]:
     by_analysis_key: dict[tuple[str, str | None], list[tuple[PresetRecord, tuple[tuple[str, str], ...]]]] = defaultdict(list)
     for preset in contributions:
         for child in preset.children:
@@ -198,6 +202,7 @@ def _same_analysis_key_differing_attributes(contributions: tuple[PresetRecord, .
 
     diagnostics: list[str] = []
     blockers: list[str] = []
+    logical_child_variants: list[LogicalChildVariant] = []
     for (tag, name), entries in sorted(by_analysis_key.items(), key=lambda item: (item[0][0].casefold(), item[0][1] or "")):
         variants = {attributes for _preset, attributes in entries}
         if len(variants) > 1:
@@ -205,9 +210,28 @@ def _same_analysis_key_differing_attributes(contributions: tuple[PresetRecord, .
             message = f"same logical child has differing attributes: {tag} Name={name or '<missing Name>'}"
             if len(mods) > 1:
                 blockers.append(message + f" [{', '.join(sorted(mods, key=str.casefold))}]")
+                for preset, attributes in sorted(entries, key=lambda entry: _variant_sort_key(entry[0], entry[1])):
+                    child = next(
+                        child
+                        for child in preset.children
+                        if child.tag == tag
+                        and child.name == name
+                        and _ordered_attributes(child.attributes) == attributes
+                    )
+                    logical_child_variants.append(
+                        LogicalChildVariant(
+                            tag=tag,
+                            name=name,
+                            attributes=attributes,
+                            source_mod=preset.source.mod_name,
+                            source_file=preset.source.relative_path,
+                            source_preset_index=preset.source_preset_index,
+                            source_child_index=child.source_child_index,
+                        )
+                    )
             else:
                 diagnostics.append(message + " within one mod; preserved for analysis")
-    return diagnostics, blockers
+    return diagnostics, blockers, tuple(logical_child_variants)
 
 
 def _format_attribute_conflict(finding: PresetAttributeFinding) -> str:
@@ -246,6 +270,15 @@ def _contribution_sort_key(preset: PresetRecord) -> tuple[str, str, int]:
         preset.source.mod_name.casefold(),
         str(preset.source.relative_path).casefold(),
         preset.source_preset_index,
+    )
+
+
+def _variant_sort_key(preset: PresetRecord, attributes: tuple[tuple[str, str], ...]) -> tuple[str, str, int, str]:
+    return (
+        preset.source.mod_name.casefold(),
+        str(preset.source.relative_path).casefold(),
+        preset.source_preset_index,
+        _format_attributes(attributes).casefold(),
     )
 
 

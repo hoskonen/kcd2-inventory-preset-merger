@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
 from typing import Any
 
 from .checker import CheckSummary, check_mods
@@ -14,7 +15,7 @@ from .generator import (
     generate_compatibility_mod,
     source_mod_roots,
 )
-from .models import ChildFinding, PlannedChild, PlannedPreset, PresetAnalysis, PresetAttributeFinding
+from .models import ChildFinding, LogicalChildVariant, PlannedChild, PlannedPreset, PresetAnalysis, PresetAttributeFinding
 from .planner import build_merge_plan, merge_plan_to_report, write_merge_plan_report
 from .scanner import scan_mods
 
@@ -286,28 +287,40 @@ def _is_relative_to(path: Path, possible_parent: Path) -> bool:
     return True
 
 
+def _icon(value: str) -> str:
+    encoding = sys.stdout.encoding or "utf-8"
+    try:
+        value.encode(encoding)
+    except UnicodeEncodeError:
+        return ""
+    return f"{value}  "
+
+
 def _print_check_summary(summary: CheckSummary, *, verbose: bool) -> None:
     plan = summary.plan
-    print("InventoryPreset conflict check")
+    status_icon = _icon("✅") if not (summary.warning_count or summary.conflict_count or summary.parse_error_count) else _icon("⚠️")
+    if summary.conflict_count or summary.parse_error_count:
+        status_icon = _icon("❌")
+    print(f"{status_icon}InventoryPreset conflict check")
     print("")
-    print(f"{len(plan.runtime_safe_additive_overlaps)} runtime-safe additive overlaps")
-    print(f"{summary.warning_count} warnings")
-    print(f"{summary.conflict_count} conflicts")
-    print(f"{summary.parse_error_count} parse errors")
+    print(f"{_icon('✅')}{len(plan.runtime_safe_additive_overlaps)} runtime-safe additive overlaps")
+    print(f"{_icon('⚠️')}{summary.warning_count} warnings")
+    print(f"{_icon('❌')}{summary.conflict_count} conflicts")
+    print(f"{_icon('❌')}{summary.parse_error_count} parse errors")
 
     if plan.recovery_issues:
-        print(f"{len(plan.recovery_issues)} non-blocking XML encoding warnings")
+        print(f"{_icon('ℹ️')}{len(plan.recovery_issues)} non-blocking XML encoding warnings")
     if plan.path_issues:
-        print(f"{len(plan.path_issues)} suspicious InventoryPreset paths")
+        print(f"{_icon('⚠️')}{len(plan.path_issues)} suspicious InventoryPreset paths")
 
-    _print_check_category("WARNING same_logical_child_different_attributes", summary.same_logical_child_different_attributes)
+    _print_same_logical_child_warnings(summary.same_logical_child_different_attributes, verbose=verbose)
     _print_check_category("WARNING identical_cross_mod_child", summary.identical_cross_mod_child)
     _print_check_category("CONFLICT preset_attribute_conflict", summary.preset_attribute_conflict)
     _print_check_category("UNRESOLVED unsupported_structure", summary.unsupported_structure)
 
     if plan.parse_issues:
         print("")
-        print("ERROR parse_error")
+        print(f"{_icon('❌')}ERROR parse_error")
         for issue in plan.parse_issues:
             print(f"{issue.path}")
             print(f"  {issue.error}")
@@ -317,28 +330,69 @@ def _print_check_summary(summary: CheckSummary, *, verbose: bool) -> None:
 
     if summary.warning_count or summary.conflict_count or summary.parse_error_count:
         print("")
-        print("InventoryPreset interactions requiring attention were detected.")
+        print(f"{_icon('⚠️')}InventoryPreset interactions requiring attention were detected.")
     else:
         print("")
-        print("No action required.")
+        print(f"{_icon('✅')}No action required.")
 
 
 def _print_check_category(label: str, presets: tuple[PlannedPreset, ...]) -> None:
     if not presets:
         return
     print("")
-    print(label)
+    print(f"{_icon('⚠️')}{label}" if label.startswith("WARNING") else f"{_icon('❌')}{label}")
     for preset in presets:
         print(f"Preset: {preset.name}")
         for reason in preset.unresolved_reasons:
             print(f"  Reason: {reason}")
 
 
+def _print_same_logical_child_warnings(presets: tuple[PlannedPreset, ...], *, verbose: bool) -> None:
+    if not presets:
+        return
+    print("")
+    print(f"{_icon('⚠️')}WARNING same_logical_child_different_attributes")
+    for preset in presets:
+        print(f"Preset: {preset.name}")
+        for tag, name in _logical_child_keys(preset.logical_child_variants):
+            print(f"Child: {tag} Name={name if name is not None else '<missing Name>'}")
+            for variant in _variants_for_child(preset.logical_child_variants, tag, name):
+                print("")
+                print(f"{variant.source_mod}:")
+                print(f"  {_format_variant_attributes(variant)}")
+                if verbose:
+                    print(f"  Source: {variant.source_file.as_posix()}")
+                    print(f"  Source indexes: preset={variant.source_preset_index}; child={variant.source_child_index}")
+            print("")
+            print("Likely load-order-sensitive.")
+
+
+def _logical_child_keys(variants: tuple[LogicalChildVariant, ...]) -> tuple[tuple[str, str | None], ...]:
+    return tuple(
+        sorted(
+            {(variant.tag, variant.name) for variant in variants},
+            key=lambda item: (item[0].casefold(), item[1] or ""),
+        )
+    )
+
+
+def _variants_for_child(
+    variants: tuple[LogicalChildVariant, ...],
+    tag: str,
+    name: str | None,
+) -> tuple[LogicalChildVariant, ...]:
+    return tuple(variant for variant in variants if variant.tag == tag and variant.name == name)
+
+
+def _format_variant_attributes(variant: LogicalChildVariant) -> str:
+    return " ".join(f'{key}="{value}"' for key, value in variant.attributes if key != "Name")
+
+
 def _print_safe_overlaps(presets: tuple[PlannedPreset, ...], *, verbose: bool) -> None:
     if not presets:
         return
     print("")
-    print("SAFE runtime_safe_additive_overlap")
+    print(f"{_icon('✅')}SAFE runtime_safe_additive_overlap")
     for preset in presets:
         print(f"Preset: {preset.name}")
         for mod in preset.source_mods:

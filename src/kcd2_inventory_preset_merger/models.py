@@ -110,6 +110,17 @@ class PlannedChild:
 
 
 @dataclass(frozen=True)
+class LogicalChildVariant:
+    tag: str
+    name: str | None
+    attributes: tuple[tuple[str, str], ...]
+    source_mod: str
+    source_file: Path
+    source_preset_index: int
+    source_child_index: int
+
+
+@dataclass(frozen=True)
 class PlannedPreset:
     name: str
     status: str
@@ -118,6 +129,7 @@ class PlannedPreset:
     source_mods: tuple[str, ...]
     unresolved_reasons: tuple[str, ...]
     diagnostics: tuple[str, ...]
+    logical_child_variants: tuple[LogicalChildVariant, ...] = ()
 
 
 @dataclass(frozen=True)

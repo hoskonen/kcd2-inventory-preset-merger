@@ -48,6 +48,24 @@ class CheckCliTests(unittest.TestCase):
         self.assertIn("ERROR parse_error", output)
         self.assertIn("InventoryPreset interactions requiring attention were detected.", output)
 
+    def test_check_shows_same_logical_child_attribute_variants(self):
+        stdout = StringIO()
+
+        with redirect_stdout(stdout):
+            exit_code = main(["check", "--mods-path", "fixtures/mods", "--verbose"])
+
+        output = stdout.getvalue()
+        self.assertEqual(exit_code, 1)
+        self.assertIn("WARNING same_logical_child_different_attributes", output)
+        self.assertIn("Preset: inventory_shop_armorerKHVinna", output)
+        self.assertIn("Child: PresetItem Name=money", output)
+        self.assertIn("mod_a:", output)
+        self.assertIn('Amount="7550"', output)
+        self.assertIn("mod_b:", output)
+        self.assertIn('Amount="5000"', output)
+        self.assertIn("Likely load-order-sensitive.", output)
+        self.assertIn("Source: mod_a/Data/Libs/Tables/item/InventoryPreset__mod_a.xml", output)
+
 
 if __name__ == "__main__":
     unittest.main()
