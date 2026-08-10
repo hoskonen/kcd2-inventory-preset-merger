@@ -1,6 +1,6 @@
-# Runtime PTF Merge Semantics Experiment
+# Runtime PTF Merge Semantics Evidence
 
-This manual experiment checks how KCD2 handles two enabled mods that patch the same vanilla `InventoryPreset`.
+This manual experiment checked how KCD2 handles two enabled mods that patch the same vanilla `InventoryPreset`.
 
 Do not use a real save you care about. These are test mods only.
 
@@ -42,55 +42,32 @@ InventoryPresetMerge/
 
 The default mod id/path should be deterministic: `inventorypresetmerge`. It can be configurable later.
 
-## Test 1: Two Source Mods, No Compatibility Patch
+## Confirmed Result
 
-1. Copy only these two folders into the game `Mods` directory:
-
-```text
-fixtures/runtime_ptf_merge_semantics/kcd2_ipm_ptf_a
-fixtures/runtime_ptf_merge_semantics/kcd2_ipm_ptf_b
-```
-
-2. Start the game and inspect an innkeeper whose inventory uses `inventory_shop_commonInnkeeper`.
-
-3. Record whether the test money/ref signal shows:
+Runtime testing confirmed that two separate enabled mods can patch the same `InventoryPreset` and both distinct `PresetItem` additions can appear simultaneously in-game.
 
 ```text
-A only: likely Mod A survived and Mod B did not
-B only: likely Mod B survived and Mod A did not
-A + B once each: both source patches coexist
-neither: path, preset, item/ref, or test observation method is wrong
-other/duplicated: runtime behavior needs closer inspection
+inventorytest_a added PresetItem Name="bandage_classic" Amount="100"
+inventorytest_b added PresetItem Name="recipe_fevertonicPotion" Amount="100"
 ```
 
-4. Swap load order if your mod manager supports it, then repeat.
+Both appeared simultaneously in the same merchant inventory with both mods enabled.
 
-This determines whether the base PTF behavior is additive, last-wins, load-order-dependent, or something else.
-
-## Test 2: Add Simulated Load-Last Compatibility Patch
-
-1. Keep Mod A and Mod B enabled.
-
-2. Also copy/enable:
+Therefore, purely additive overlaps with distinct child contributions are classified as:
 
 ```text
-fixtures/runtime_ptf_merge_semantics/kcd2_ipm_ptf_ab_loadlast
+runtime_safe_additive_overlap
 ```
 
-3. Make sure it loads after both source mods.
+The tool should not generate a compatibility patch for purely additive overlaps by default.
 
-4. Inspect the same innkeeper again.
+## Still Ambiguous
 
-Record whether the test signal shows:
+The runtime behavior for ambiguous/repeated child structures is not yet established. Merge generation should still fail closed for:
 
-```text
-333 total: compatibility patch restored a missing additive result without duplication
-666 total or visibly doubled: emitting both children again duplicates already-applied changes
-111 or 222: load-last patch did not combine as expected
-other: runtime behavior needs closer inspection
-```
+- conflicting explicit preset-level attributes
+- identical child contributions across mods where duplicate semantics are uncertain
+- same logical child modified differently across mods
+- unsupported/unknown child structures
 
-## Why This Blocks Production Generation
-
-Milestone 2 must not assume that writing both source children into a load-last patch is safe. If KCD2 already applies both source patches additively, a generated patch may duplicate the same selection sources. If KCD2 is last-wins, a generated patch may be necessary. This experiment tells us which behavior we are actually targeting.
-
+Writing a load-last patch for a purely additive overlap could duplicate entries that the game already combines correctly.

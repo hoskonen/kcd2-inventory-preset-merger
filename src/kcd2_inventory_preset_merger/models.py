@@ -122,8 +122,9 @@ class PlannedPreset:
 
 @dataclass(frozen=True)
 class MergePlan:
-    runtime_semantics_warning: str
+    runtime_semantics_note: str
     safe_presets: tuple[PlannedPreset, ...]
+    runtime_safe_additive_overlaps: tuple[PlannedPreset, ...]
     unresolved_presets: tuple[PlannedPreset, ...]
     parse_issues: tuple[ParseIssue, ...]
     recovery_issues: tuple[ParseIssue, ...]

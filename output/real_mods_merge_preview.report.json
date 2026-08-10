@@ -8,8 +8,7 @@
       "path": "E:/SteamLibrary/steamapps/common/KingdomComeDeliverance2/Mods/armor_refit/Data/armor_refit/Libs/Tables/Item/InventoryPreset__armor_refit.xml"
     }
   ],
-  "runtime_semantics_warning": "Cross-mod KCD2 PTF runtime behavior for repeated InventoryPreset patches has not yet been experimentally confirmed.",
-  "safe_presets": [
+  "runtime_safe_additive_overlaps": [
     {
       "attributes": [
         [
@@ -62,7 +61,7 @@
         "curaequi",
         "equippablelantern"
       ],
-      "status": "safe_additive_candidate",
+      "status": "runtime_safe_additive_overlap",
       "unresolved_reasons": []
     },
     {
@@ -85,27 +84,6 @@
           "attributes": [
             [
               "Name",
-              "bandage_classic"
-            ],
-            [
-              "Amount",
-              "100"
-            ],
-            [
-              "Health",
-              "1"
-            ]
-          ],
-          "source_child_index": 0,
-          "source_file": "inventorytest_a/Data/Libs/Tables/item/InventoryPreset__inventorytest_a.xml",
-          "source_mod": "inventorytest_a",
-          "source_preset_index": 0,
-          "tag": "PresetItem"
-        },
-        {
-          "attributes": [
-            [
-              "Name",
               "recipe_fevertonicPotion"
             ],
             [
@@ -122,18 +100,41 @@
           "source_mod": "inventorytest_b",
           "source_preset_index": 0,
           "tag": "PresetItem"
+        },
+        {
+          "attributes": [
+            [
+              "Name",
+              "bandage_classic"
+            ],
+            [
+              "Amount",
+              "100"
+            ],
+            [
+              "Health",
+              "1"
+            ]
+          ],
+          "source_child_index": 0,
+          "source_file": "inventorytesta/Data/Libs/Tables/item/InventoryPreset__inventorytesta.xml",
+          "source_mod": "inventorytesta",
+          "source_preset_index": 0,
+          "tag": "PresetItem"
         }
       ],
       "diagnostics": [],
       "name": "inventory_shop_merchantTroskovice",
       "source_mods": [
-        "inventorytest_a",
-        "inventorytest_b"
+        "inventorytest_b",
+        "inventorytesta"
       ],
-      "status": "safe_additive_candidate",
+      "status": "runtime_safe_additive_overlap",
       "unresolved_reasons": []
     }
   ],
+  "runtime_semantics_note": "Runtime test confirmed distinct cross-mod PresetItem additions can coexist: inventorytest_a added bandage_classic x100, inventorytest_b added recipe_fevertonicPotion x100, and both appeared simultaneously in the same merchant inventory.",
+  "safe_presets": [],
   "unresolved_presets": [],
-  "would_generate_xml": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<database name=\"barbora\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"InventoryPreset.xsd\">\n    <InventoryPresets version=\"2\">\n        <InventoryPreset Name=\"inventory_shop_commonInnkeeper\" Health=\"1\" Mode=\"All\">\n            <InventoryPresetRef Name=\"curaequi_inn_horsefeed_roll\" />\n            <InventoryPresetRef Name=\"inventory_lantern_old_inn\" />\n        </InventoryPreset>\n        <InventoryPreset Name=\"inventory_shop_merchantTroskovice\" Health=\"1\" Mode=\"All\">\n            <PresetItem Name=\"bandage_classic\" Amount=\"100\" Health=\"1\" />\n            <PresetItem Name=\"recipe_fevertonicPotion\" Amount=\"100\" Health=\"1\" />\n        </InventoryPreset>\n    </InventoryPresets>\n</database>\n"
+  "would_generate_xml": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<database name=\"barbora\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"InventoryPreset.xsd\">\n    <InventoryPresets version=\"2\" />\n</database>\n"
 }
