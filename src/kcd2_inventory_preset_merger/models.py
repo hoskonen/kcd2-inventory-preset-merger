@@ -76,11 +76,19 @@ class ChildFinding:
 
 
 @dataclass(frozen=True)
+class PresetAttributeFinding:
+    attribute: str
+    explicit_values: tuple[tuple[str, tuple[str, ...]], ...]
+    omitted_by_mods: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class PresetAnalysis:
     preset_name: str
     contributions: tuple[PresetRecord, ...]
     touched_by_multiple_mods: bool
-    preset_attribute_differences: tuple[tuple[tuple[str, str], ...], ...]
+    preset_attribute_conflicts: tuple[PresetAttributeFinding, ...]
+    preset_attribute_omissions: tuple[PresetAttributeFinding, ...]
     identical_duplicate_children: tuple[ChildFinding, ...]
     additive_children: tuple[ChildFinding, ...]
     same_child_name_different_attributes: tuple[ChildFinding, ...]

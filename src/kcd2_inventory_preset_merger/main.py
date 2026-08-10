@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .conflicts import analyze_presets, build_preset_index
-from .models import ChildFinding, PresetAnalysis
+from .models import ChildFinding, PresetAnalysis, PresetAttributeFinding
 from .scanner import scan_mods
 
 
@@ -102,8 +102,10 @@ def _print_overlap(analysis: PresetAnalysis) -> None:
         print(f"  - {preset.source.mod_name}: {preset.source.relative_path.as_posix()}")
 
     labels: list[str] = []
-    if analysis.preset_attribute_differences:
-        labels.append("preset attribute differences")
+    if analysis.preset_attribute_conflicts:
+        labels.append("preset attribute conflicts")
+    if analysis.preset_attribute_omissions:
+        labels.append("compatible preset attribute omissions")
     if analysis.identical_duplicate_children:
         labels.append("identical duplicate children")
     if analysis.additive_children:
@@ -116,10 +118,8 @@ def _print_overlap(analysis: PresetAnalysis) -> None:
     _print_child_findings("  Additive children", analysis.additive_children)
     _print_child_findings("  Differing child attributes", analysis.same_child_name_different_attributes)
 
-    if analysis.preset_attribute_differences:
-        print("  Preset attribute variants:")
-        for attributes in analysis.preset_attribute_differences:
-            print(f"  - {_format_attributes(attributes)}")
+    _print_attribute_findings("  Preset attribute conflicts", analysis.preset_attribute_conflicts)
+    _print_attribute_findings("  Compatible preset attribute omissions", analysis.preset_attribute_omissions)
 
 
 def _print_child_findings(label: str, findings: tuple[ChildFinding, ...]) -> None:
@@ -137,6 +137,19 @@ def _format_attributes(attributes: tuple[tuple[str, str], ...] | None) -> str:
     if attributes is None:
         return ""
     return " ".join(f'{key}="{value}"' for key, value in attributes)
+
+
+def _print_attribute_findings(label: str, findings: tuple[PresetAttributeFinding, ...]) -> None:
+    if not findings:
+        return
+    print(f"{label}:")
+    for finding in findings:
+        explicit = ", ".join(
+            f'{value} [{", ".join(mods)}]'
+            for value, mods in finding.explicit_values
+        )
+        omitted = ", ".join(finding.omitted_by_mods) if finding.omitted_by_mods else "none"
+        print(f"  - {finding.attribute}: explicit {explicit}; omitted by {omitted}")
 
 
 if __name__ == "__main__":

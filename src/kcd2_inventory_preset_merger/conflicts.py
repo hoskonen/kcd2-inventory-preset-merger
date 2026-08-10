@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from pathlib import Path
 
-from .models import ChildFinding, ChildIdentity, PresetAnalysis, PresetRecord
+from .models import ChildFinding, ChildIdentity, PresetAnalysis, PresetAttributeFinding, PresetRecord
 
 
 def build_preset_index(presets: tuple[PresetRecord, ...]) -> dict[str, tuple[PresetRecord, ...]]:
@@ -19,14 +19,7 @@ def analyze_presets(index: dict[str, tuple[PresetRecord, ...]]) -> tuple[PresetA
 
 def _analyze_preset(name: str, contributions: tuple[PresetRecord, ...]) -> PresetAnalysis:
     mods = {preset.source.mod_name for preset in contributions}
-    preset_attr_sets = tuple(
-        sorted(
-            {
-                _attributes_key(preset.attributes)
-                for preset in contributions
-            }
-        )
-    )
+    preset_attribute_conflicts, preset_attribute_omissions = _analyze_preset_attributes(contributions)
 
     by_child_identity: dict[ChildIdentity, list[tuple[PresetRecord, tuple[tuple[str, str], ...]]]] = defaultdict(list)
     for preset in contributions:
@@ -76,11 +69,50 @@ def _analyze_preset(name: str, contributions: tuple[PresetRecord, ...]) -> Prese
         preset_name=name,
         contributions=tuple(sorted(contributions, key=_preset_sort_key)),
         touched_by_multiple_mods=len(mods) > 1,
-        preset_attribute_differences=preset_attr_sets if len(preset_attr_sets) > 1 else (),
+        preset_attribute_conflicts=preset_attribute_conflicts,
+        preset_attribute_omissions=preset_attribute_omissions,
         identical_duplicate_children=tuple(identical_duplicates),
         additive_children=tuple(additive_children),
         same_child_name_different_attributes=tuple(differing_child_attributes),
     )
+
+
+def _analyze_preset_attributes(
+    contributions: tuple[PresetRecord, ...],
+) -> tuple[tuple[PresetAttributeFinding, ...], tuple[PresetAttributeFinding, ...]]:
+    attributes = sorted(
+        {attribute for preset in contributions for attribute in preset.attributes},
+        key=str.casefold,
+    )
+    conflicts: list[PresetAttributeFinding] = []
+    omissions: list[PresetAttributeFinding] = []
+
+    for attribute in attributes:
+        values_by_mod: dict[str, set[str]] = defaultdict(set)
+        omitted_by_mods: set[str] = set()
+
+        for preset in contributions:
+            if attribute in preset.attributes:
+                values_by_mod[preset.attributes[attribute]].add(preset.source.mod_name)
+            else:
+                omitted_by_mods.add(preset.source.mod_name)
+
+        explicit_values = tuple(
+            (value, _sorted_mods(mods))
+            for value, mods in sorted(values_by_mod.items(), key=lambda item: item[0].casefold())
+        )
+        finding = PresetAttributeFinding(
+            attribute=attribute,
+            explicit_values=explicit_values,
+            omitted_by_mods=_sorted_mods(omitted_by_mods),
+        )
+
+        if len(values_by_mod) > 1:
+            conflicts.append(finding)
+        elif omitted_by_mods and values_by_mod:
+            omissions.append(finding)
+
+    return tuple(conflicts), tuple(omissions)
 
 
 def _attributes_key(attributes: dict[str, str]) -> tuple[tuple[str, str], ...]:

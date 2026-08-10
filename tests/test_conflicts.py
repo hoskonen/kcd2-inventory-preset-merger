@@ -28,6 +28,7 @@ class ConflictTests(unittest.TestCase):
             additive_names,
         )
         self.assertFalse(analysis.same_child_name_different_attributes)
+        self.assertFalse(analysis.preset_attribute_conflicts)
 
     def test_identical_duplicate_children_are_reported(self):
         analysis = _analysis_by_name()["inventory_shop_commonBlacksmith"]
@@ -41,10 +42,18 @@ class ConflictTests(unittest.TestCase):
         differing_names = {finding.identity.name for finding in analysis.same_child_name_different_attributes}
         self.assertIn("money", differing_names)
 
-    def test_preset_attribute_differences_are_reported(self):
+    def test_preset_attribute_conflicts_require_different_explicit_values(self):
         analysis = _analysis_by_name()["inventory_shop_armorerKHVinna"]
 
-        self.assertTrue(analysis.preset_attribute_differences)
+        conflict_attributes = {finding.attribute for finding in analysis.preset_attribute_conflicts}
+        self.assertIn("Mode", conflict_attributes)
+
+    def test_preset_attribute_omissions_are_diagnostic_not_conflicts(self):
+        analysis = _analysis_by_name()["inventory_shop_commonMerchant"]
+
+        omission_attributes = {finding.attribute for finding in analysis.preset_attribute_omissions}
+        self.assertLessEqual({"Mode", "Health"}, omission_attributes)
+        self.assertFalse(analysis.preset_attribute_conflicts)
 
 
 if __name__ == "__main__":
