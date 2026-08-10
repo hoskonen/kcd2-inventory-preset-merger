@@ -65,6 +65,7 @@ class ScanResult:
     files: tuple[InventoryPresetFile, ...]
     presets: tuple[PresetRecord, ...]
     parse_issues: tuple[ParseIssue, ...]
+    recovery_issues: tuple[ParseIssue, ...] = ()
 
 
 @dataclass(frozen=True)

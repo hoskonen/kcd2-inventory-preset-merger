@@ -41,3 +41,7 @@ Supported child element types for this milestone:
 
 - `PresetItem`
 - `InventoryPresetRef`
+
+## Runtime Validation
+
+Before merge generation is implemented, runtime PTF merge behavior must be validated in-game. See [docs/runtime-ptf-merge-semantics.md](docs/runtime-ptf-merge-semantics.md).

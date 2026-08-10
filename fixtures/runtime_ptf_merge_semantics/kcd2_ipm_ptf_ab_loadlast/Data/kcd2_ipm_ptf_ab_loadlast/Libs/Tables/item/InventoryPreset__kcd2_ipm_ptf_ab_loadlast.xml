@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="barbora" xsi:noNamespaceSchemaLocation="InventoryPreset.xsd">
+    <InventoryPresets version="2">
+        <InventoryPreset Name="inventory_shop_commonInnkeeper">
+            <InventoryPresetRef Name="kcd2_ipm_runtime_a_money_ref"/>
+            <InventoryPresetRef Name="kcd2_ipm_runtime_b_money_ref"/>
+        </InventoryPreset>
+    </InventoryPresets>
+</database>

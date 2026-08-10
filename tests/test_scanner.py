@@ -15,6 +15,7 @@ class ScannerTests(unittest.TestCase):
                 ("mod_a", "mod_a/Data/Libs/Tables/item/InventoryPreset__mod_a.xml"),
                 ("mod_b", "mod_b/Data/Libs/Tables/item/InventoryPreset__mod_b.xml"),
                 ("mod_duplicate", "mod_duplicate/Data/Libs/Tables/item/InventoryPreset__duplicate.xml"),
+                ("mod_encoding", "mod_encoding/Data/Libs/Tables/item/InventoryPreset__encoding.xml"),
                 ("mod_invalid", "mod_invalid/Data/Libs/Tables/item/InventoryPreset__broken.xml"),
             ],
         )
@@ -22,10 +23,13 @@ class ScannerTests(unittest.TestCase):
     def test_scan_reports_parse_errors_without_discarding_valid_files(self):
         result = scan_mods(Path("fixtures/mods"))
 
-        self.assertEqual(len(result.files), 4)
+        self.assertEqual(len(result.files), 5)
         self.assertEqual(len(result.parse_issues), 1)
         self.assertIn("InventoryPreset__broken.xml", str(result.parse_issues[0].path))
         self.assertIn("XML parse error", result.parse_issues[0].error)
+        self.assertEqual(len(result.recovery_issues), 1)
+        self.assertIn("InventoryPreset__encoding.xml", str(result.recovery_issues[0].path))
+        self.assertIn("encoding_mismatch_recovered", result.recovery_issues[0].error)
         self.assertTrue(any(preset.name == "inventory_shop_commonMerchant" for preset in result.presets))
 
 

@@ -37,6 +37,20 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(len(repeated), 2)
         self.assertEqual([record.children[0].name for record in repeated], ["first_item", "second_item"])
 
+    def test_parse_recovers_us_ascii_declaration_with_utf8_bytes_in_memory(self):
+        source = InventoryPresetFile(
+            mod_name="mod_encoding",
+            path=Path("fixtures/mods/mod_encoding/Data/Libs/Tables/item/InventoryPreset__encoding.xml"),
+            relative_path=Path("mod_encoding/Data/Libs/Tables/item/InventoryPreset__encoding.xml"),
+        )
+        recovery_issues = []
+
+        records = parse_inventory_preset_file(source, recovery_issues)
+
+        self.assertEqual([record.name for record in records], ["inventory_encoding_mismatch"])
+        self.assertEqual(len(recovery_issues), 1)
+        self.assertIn("encoding_mismatch_recovered", recovery_issues[0])
+
 
 if __name__ == "__main__":
     unittest.main()

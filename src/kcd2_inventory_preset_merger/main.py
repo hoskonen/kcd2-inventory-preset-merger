@@ -71,6 +71,12 @@ def _scan_command(args: argparse.Namespace) -> int:
         for issue in result.parse_issues:
             print(f"- {issue.path}: {issue.error}")
 
+    if result.recovery_issues:
+        print("")
+        print(f"Recovered {len(result.recovery_issues)} XML encoding mismatches:")
+        for issue in result.recovery_issues:
+            print(f"- {issue.path}: {issue.error}")
+
     if overlaps:
         print("")
         print("Overlaps:")

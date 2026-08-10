@@ -33,17 +33,22 @@ def scan_mods(mods_path: Path) -> ScanResult:
     files = discover_inventory_preset_files(mods_path)
     presets: list[PresetRecord] = []
     parse_issues: list[ParseIssue] = []
+    recovery_issues: list[ParseIssue] = []
 
     for file in files:
+        recovery_messages: list[str] = []
         try:
-            presets.extend(parse_inventory_preset_file(file))
+            presets.extend(parse_inventory_preset_file(file, recovery_messages))
         except InventoryPresetParseError as exc:
             parse_issues.append(ParseIssue(path=file.path, error=str(exc)))
+        for message in recovery_messages:
+            recovery_issues.append(ParseIssue(path=file.path, error=message))
 
     return ScanResult(
         files=files,
         presets=tuple(presets),
         parse_issues=tuple(sorted(parse_issues, key=lambda issue: _path_sort_key(issue.path))),
+        recovery_issues=tuple(sorted(recovery_issues, key=lambda issue: _path_sort_key(issue.path))),
     )
 
 
