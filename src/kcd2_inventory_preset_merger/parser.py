@@ -57,6 +57,7 @@ def _retry_ascii_declared_utf8(
 
 def _parse_tree(source: InventoryPresetFile, tree: ET.ElementTree) -> tuple[PresetRecord, ...]:
     records: list[PresetRecord] = []
+    preset_index = 0
     for element in tree.getroot().iter():
         if _local_name(element.tag) != "InventoryPreset":
             continue
@@ -65,24 +66,31 @@ def _parse_tree(source: InventoryPresetFile, tree: ET.ElementTree) -> tuple[Pres
         if not name:
             continue
 
-        children = tuple(
-            PresetChild(
+        children: list[PresetChild] = []
+        unsupported_children: list[PresetChild] = []
+        for child_index, child in enumerate(list(element)):
+            parsed_child = PresetChild(
                 tag=_local_name(child.tag),
                 name=child.attrib.get("Name"),
                 attributes=dict(child.attrib),
+                source_child_index=child_index,
             )
-            for child in list(element)
-            if _local_name(child.tag) in SUPPORTED_CHILD_TAGS
-        )
+            if parsed_child.tag in SUPPORTED_CHILD_TAGS:
+                children.append(parsed_child)
+            else:
+                unsupported_children.append(parsed_child)
 
         records.append(
             PresetRecord(
                 name=name,
                 attributes=dict(element.attrib),
-                children=children,
+                children=tuple(children),
+                unsupported_children=tuple(unsupported_children),
                 source=source,
+                source_preset_index=preset_index,
             )
         )
+        preset_index += 1
 
     return tuple(records)
 

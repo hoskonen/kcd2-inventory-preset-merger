@@ -34,8 +34,12 @@ def scan_mods(mods_path: Path) -> ScanResult:
     presets: list[PresetRecord] = []
     parse_issues: list[ParseIssue] = []
     recovery_issues: list[ParseIssue] = []
+    path_issues: list[ParseIssue] = []
 
     for file in files:
+        path_warning = _inventory_preset_path_warning(file)
+        if path_warning is not None:
+            path_issues.append(ParseIssue(path=file.path, error=path_warning))
         recovery_messages: list[str] = []
         try:
             presets.extend(parse_inventory_preset_file(file, recovery_messages))
@@ -49,8 +53,37 @@ def scan_mods(mods_path: Path) -> ScanResult:
         presets=tuple(presets),
         parse_issues=tuple(sorted(parse_issues, key=lambda issue: _path_sort_key(issue.path))),
         recovery_issues=tuple(sorted(recovery_issues, key=lambda issue: _path_sort_key(issue.path))),
+        path_issues=tuple(sorted(path_issues, key=lambda issue: _path_sort_key(issue.path))),
     )
 
 
 def _path_sort_key(path: Path) -> str:
     return str(path).casefold()
+
+
+def _inventory_preset_path_warning(file: InventoryPresetFile) -> str | None:
+    parts = tuple(part.casefold() for part in file.relative_path.parts)
+    shared_layout = (
+        file.mod_name.casefold(),
+        "data",
+        "libs",
+        "tables",
+        "item",
+    )
+    modid_layout = (
+        file.mod_name.casefold(),
+        "data",
+        file.mod_name.casefold(),
+        "libs",
+        "tables",
+        "item",
+    )
+    if len(parts) >= 6 and parts[:5] == shared_layout:
+        return None
+    if len(parts) >= 7 and parts[:6] == modid_layout:
+        return None
+    return (
+        "suspicious_inventory_preset_path: expected InventoryPreset file under "
+        f"Data/Libs/Tables/item/ or Data/{file.mod_name}/Libs/Tables/item/; "
+        "recursive discovery alone does not prove the game loads it, but this warning is not evidence that a mod will not load"
+    )

@@ -1,0 +1,139 @@
+{
+  "generation_blocked": false,
+  "parse_issues": [],
+  "path_issues": [],
+  "recovery_issues": [
+    {
+      "error": "encoding_mismatch_recovered: declared us-ascii but contained non-ASCII bytes; parsed as UTF-8 in memory",
+      "path": "E:/SteamLibrary/steamapps/common/KingdomComeDeliverance2/Mods/armor_refit/Data/armor_refit/Libs/Tables/Item/InventoryPreset__armor_refit.xml"
+    }
+  ],
+  "runtime_semantics_warning": "Cross-mod KCD2 PTF runtime behavior for repeated InventoryPreset patches has not yet been experimentally confirmed.",
+  "safe_presets": [
+    {
+      "attributes": [
+        [
+          "Name",
+          "inventory_shop_commonInnkeeper"
+        ],
+        [
+          "Health",
+          "1"
+        ],
+        [
+          "Mode",
+          "All"
+        ]
+      ],
+      "children": [
+        {
+          "attributes": [
+            [
+              "Name",
+              "curaequi_inn_horsefeed_roll"
+            ]
+          ],
+          "source_child_index": 0,
+          "source_file": "curaequi/Data/Libs/Tables/item/InventoryPreset__curaequi.xml",
+          "source_mod": "curaequi",
+          "source_preset_index": 23,
+          "tag": "InventoryPresetRef"
+        },
+        {
+          "attributes": [
+            [
+              "Name",
+              "inventory_lantern_old_inn"
+            ]
+          ],
+          "source_child_index": 0,
+          "source_file": "equippablelantern/Data/Libs/Tables/item/InventoryPreset__equippablelantern.xml",
+          "source_mod": "equippablelantern",
+          "source_preset_index": 4,
+          "tag": "InventoryPresetRef"
+        }
+      ],
+      "diagnostics": [
+        "compatible preset attribute omission Health: explicit 1 [curaequi]; omitted by equippablelantern",
+        "compatible preset attribute omission Mode: explicit All [curaequi]; omitted by equippablelantern"
+      ],
+      "name": "inventory_shop_commonInnkeeper",
+      "source_mods": [
+        "curaequi",
+        "equippablelantern"
+      ],
+      "status": "safe_additive_candidate",
+      "unresolved_reasons": []
+    },
+    {
+      "attributes": [
+        [
+          "Name",
+          "inventory_shop_merchantTroskovice"
+        ],
+        [
+          "Health",
+          "1"
+        ],
+        [
+          "Mode",
+          "All"
+        ]
+      ],
+      "children": [
+        {
+          "attributes": [
+            [
+              "Name",
+              "bandage_classic"
+            ],
+            [
+              "Amount",
+              "100"
+            ],
+            [
+              "Health",
+              "1"
+            ]
+          ],
+          "source_child_index": 0,
+          "source_file": "inventorytest_a/Data/Libs/Tables/item/InventoryPreset__inventorytest_a.xml",
+          "source_mod": "inventorytest_a",
+          "source_preset_index": 0,
+          "tag": "PresetItem"
+        },
+        {
+          "attributes": [
+            [
+              "Name",
+              "recipe_fevertonicPotion"
+            ],
+            [
+              "Amount",
+              "100"
+            ],
+            [
+              "Health",
+              "1"
+            ]
+          ],
+          "source_child_index": 0,
+          "source_file": "inventorytest_b/Data/Libs/Tables/item/InventoryPreset__inventorytest_b.xml",
+          "source_mod": "inventorytest_b",
+          "source_preset_index": 0,
+          "tag": "PresetItem"
+        }
+      ],
+      "diagnostics": [],
+      "name": "inventory_shop_merchantTroskovice",
+      "source_mods": [
+        "inventorytest_a",
+        "inventorytest_b"
+      ],
+      "status": "safe_additive_candidate",
+      "unresolved_reasons": []
+    }
+  ],
+  "unresolved_presets": [],
+  "would_generate_xml": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<database name=\"barbora\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"InventoryPreset.xsd\">\n    <InventoryPresets version=\"2\">\n        <InventoryPreset Name=\"inventory_shop_commonInnkeeper\" Health=\"1\" Mode=\"All\">\n            <InventoryPresetRef Name=\"curaequi_inn_horsefeed_roll\" />\n            <InventoryPresetRef Name=\"inventory_lantern_old_inn\" />\n        </InventoryPreset>\n        <InventoryPreset Name=\"inventory_shop_merchantTroskovice\" Health=\"1\" Mode=\"All\">\n            <PresetItem Name=\"bandage_classic\" Amount=\"100\" Health=\"1\" />\n            <PresetItem Name=\"recipe_fevertonicPotion\" Amount=\"100\" Health=\"1\" />\n        </InventoryPreset>\n    </InventoryPresets>\n</database>\n"
+}

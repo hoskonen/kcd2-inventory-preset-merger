@@ -1,0 +1,197 @@
+{
+  "generation_blocked": true,
+  "parse_issues": [
+    {
+      "error": "XML parse error: no element found: line 8, column 0",
+      "path": "F:/Modding/Tools/KCD2-Inventory-Preset-Merger/fixtures/mods/mod_invalid/Data/Libs/Tables/item/InventoryPreset__broken.xml"
+    }
+  ],
+  "path_issues": [
+    {
+      "error": "suspicious_inventory_preset_path: expected InventoryPreset file under Data/mod_a/Libs/Tables/item/; recursive discovery alone does not prove the game loads it",
+      "path": "F:/Modding/Tools/KCD2-Inventory-Preset-Merger/fixtures/mods/mod_a/Data/Libs/Tables/item/InventoryPreset__mod_a.xml"
+    },
+    {
+      "error": "suspicious_inventory_preset_path: expected InventoryPreset file under Data/mod_b/Libs/Tables/item/; recursive discovery alone does not prove the game loads it",
+      "path": "F:/Modding/Tools/KCD2-Inventory-Preset-Merger/fixtures/mods/mod_b/Data/Libs/Tables/item/InventoryPreset__mod_b.xml"
+    },
+    {
+      "error": "suspicious_inventory_preset_path: expected InventoryPreset file under Data/mod_duplicate/Libs/Tables/item/; recursive discovery alone does not prove the game loads it",
+      "path": "F:/Modding/Tools/KCD2-Inventory-Preset-Merger/fixtures/mods/mod_duplicate/Data/Libs/Tables/item/InventoryPreset__duplicate.xml"
+    },
+    {
+      "error": "suspicious_inventory_preset_path: expected InventoryPreset file under Data/mod_encoding/Libs/Tables/item/; recursive discovery alone does not prove the game loads it",
+      "path": "F:/Modding/Tools/KCD2-Inventory-Preset-Merger/fixtures/mods/mod_encoding/Data/Libs/Tables/item/InventoryPreset__encoding.xml"
+    },
+    {
+      "error": "suspicious_inventory_preset_path: expected InventoryPreset file under Data/mod_invalid/Libs/Tables/item/; recursive discovery alone does not prove the game loads it",
+      "path": "F:/Modding/Tools/KCD2-Inventory-Preset-Merger/fixtures/mods/mod_invalid/Data/Libs/Tables/item/InventoryPreset__broken.xml"
+    }
+  ],
+  "recovery_issues": [
+    {
+      "error": "encoding_mismatch_recovered: declared us-ascii but contained non-ASCII bytes; parsed as UTF-8 in memory",
+      "path": "F:/Modding/Tools/KCD2-Inventory-Preset-Merger/fixtures/mods/mod_encoding/Data/Libs/Tables/item/InventoryPreset__encoding.xml"
+    }
+  ],
+  "runtime_semantics_warning": "Cross-mod KCD2 PTF runtime behavior for repeated InventoryPreset patches has not yet been experimentally confirmed.",
+  "safe_presets": [
+    {
+      "attributes": [
+        [
+          "Name",
+          "inventory_shop_commonMerchant"
+        ],
+        [
+          "Health",
+          "1"
+        ],
+        [
+          "Mode",
+          "All"
+        ]
+      ],
+      "children": [
+        {
+          "attributes": [
+            [
+              "Name",
+              "apple"
+            ],
+            [
+              "Amount",
+              "1"
+            ],
+            [
+              "Quality",
+              "2"
+            ]
+          ],
+          "source_child_index": 0,
+          "source_file": "mod_a/Data/Libs/Tables/item/InventoryPreset__mod_a.xml",
+          "source_mod": "mod_a",
+          "source_preset_index": 0,
+          "tag": "PresetItem"
+        },
+        {
+          "attributes": [
+            [
+              "Name",
+              "inventory_lantern_old_merchant"
+            ]
+          ],
+          "source_child_index": 1,
+          "source_file": "mod_a/Data/Libs/Tables/item/InventoryPreset__mod_a.xml",
+          "source_mod": "mod_a",
+          "source_preset_index": 0,
+          "tag": "InventoryPresetRef"
+        },
+        {
+          "attributes": [
+            [
+              "Name",
+              "bread"
+            ],
+            [
+              "Amount",
+              "2"
+            ]
+          ],
+          "source_child_index": 0,
+          "source_file": "mod_b/Data/Libs/Tables/item/InventoryPreset__mod_b.xml",
+          "source_mod": "mod_b",
+          "source_preset_index": 0,
+          "tag": "PresetItem"
+        },
+        {
+          "attributes": [
+            [
+              "Name",
+              "inventory_outer_garments_ref"
+            ]
+          ],
+          "source_child_index": 1,
+          "source_file": "mod_b/Data/Libs/Tables/item/InventoryPreset__mod_b.xml",
+          "source_mod": "mod_b",
+          "source_preset_index": 0,
+          "tag": "InventoryPresetRef"
+        }
+      ],
+      "diagnostics": [
+        "compatible preset attribute omission Health: explicit 1 [mod_a]; omitted by mod_b",
+        "compatible preset attribute omission Mode: explicit All [mod_a]; omitted by mod_b"
+      ],
+      "name": "inventory_shop_commonMerchant",
+      "source_mods": [
+        "mod_a",
+        "mod_b"
+      ],
+      "status": "safe_additive_candidate",
+      "unresolved_reasons": []
+    }
+  ],
+  "unresolved_presets": [
+    {
+      "attributes": [
+        [
+          "Name",
+          "inventory_shop_armorerKHVinna"
+        ],
+        [
+          "Health",
+          "1"
+        ],
+        [
+          "Mode",
+          "All"
+        ],
+        [
+          "ModeValue",
+          "0.5"
+        ]
+      ],
+      "children": [],
+      "diagnostics": [
+        "compatible preset attribute omission ModeValue: explicit 0.5 [mod_b]; omitted by mod_a",
+        "same analysis key with differing attributes preserved exactly: PresetItem Name=money"
+      ],
+      "name": "inventory_shop_armorerKHVinna",
+      "source_mods": [
+        "mod_a",
+        "mod_b"
+      ],
+      "status": "unresolved",
+      "unresolved_reasons": [
+        "conflicting explicit preset attribute Mode: All [mod_a], AmountFraction [mod_b]"
+      ]
+    },
+    {
+      "attributes": [
+        [
+          "Name",
+          "inventory_shop_commonBlacksmith"
+        ],
+        [
+          "Health",
+          "1"
+        ],
+        [
+          "Mode",
+          "All"
+        ]
+      ],
+      "children": [],
+      "diagnostics": [],
+      "name": "inventory_shop_commonBlacksmith",
+      "source_mods": [
+        "mod_a",
+        "mod_b"
+      ],
+      "status": "unresolved",
+      "unresolved_reasons": [
+        "ambiguous identical child independently contributed by multiple mods: PresetItem Name=\"hammer\" Amount=\"1\" [mod_a, mod_b]"
+      ]
+    }
+  ],
+  "would_generate_xml": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<database name=\"barbora\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"InventoryPreset.xsd\">\n    <InventoryPresets version=\"2\">\n        <InventoryPreset Name=\"inventory_shop_commonMerchant\" Health=\"1\" Mode=\"All\">\n            <PresetItem Name=\"apple\" Amount=\"1\" Quality=\"2\" />\n            <InventoryPresetRef Name=\"inventory_lantern_old_merchant\" />\n            <PresetItem Name=\"bread\" Amount=\"2\" />\n            <InventoryPresetRef Name=\"inventory_outer_garments_ref\" />\n        </InventoryPreset>\n    </InventoryPresets>\n</database>\n"
+}

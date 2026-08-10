@@ -36,6 +36,7 @@ class PresetChild:
     tag: str
     name: str | None
     attributes: dict[str, str]
+    source_child_index: int = 0
 
     @property
     def identity(self) -> ChildIdentity:
@@ -51,7 +52,9 @@ class PresetRecord:
     name: str
     attributes: dict[str, str]
     children: tuple[PresetChild, ...]
+    unsupported_children: tuple[PresetChild, ...]
     source: InventoryPresetFile
+    source_preset_index: int = 0
 
 
 @dataclass(frozen=True)
@@ -66,6 +69,7 @@ class ScanResult:
     presets: tuple[PresetRecord, ...]
     parse_issues: tuple[ParseIssue, ...]
     recovery_issues: tuple[ParseIssue, ...] = ()
+    path_issues: tuple[ParseIssue, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -93,3 +97,34 @@ class PresetAnalysis:
     identical_duplicate_children: tuple[ChildFinding, ...]
     additive_children: tuple[ChildFinding, ...]
     same_child_name_different_attributes: tuple[ChildFinding, ...]
+
+
+@dataclass(frozen=True)
+class PlannedChild:
+    tag: str
+    attributes: tuple[tuple[str, str], ...]
+    source_mod: str
+    source_file: Path
+    source_preset_index: int
+    source_child_index: int
+
+
+@dataclass(frozen=True)
+class PlannedPreset:
+    name: str
+    status: str
+    attributes: tuple[tuple[str, str], ...]
+    children: tuple[PlannedChild, ...]
+    source_mods: tuple[str, ...]
+    unresolved_reasons: tuple[str, ...]
+    diagnostics: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class MergePlan:
+    runtime_semantics_warning: str
+    safe_presets: tuple[PlannedPreset, ...]
+    unresolved_presets: tuple[PlannedPreset, ...]
+    parse_issues: tuple[ParseIssue, ...]
+    recovery_issues: tuple[ParseIssue, ...]
+    path_issues: tuple[ParseIssue, ...]

@@ -7,6 +7,7 @@ from typing import Any
 
 from .conflicts import analyze_presets, build_preset_index
 from .models import ChildFinding, PresetAnalysis, PresetAttributeFinding
+from .planner import build_merge_plan, merge_plan_to_report, write_merge_plan_report
 from .scanner import scan_mods
 
 
@@ -19,6 +20,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "scan":
         return _scan_command(args)
+    if args.command == "preview":
+        return _preview_command(args)
 
     parser.print_help()
     return 2
@@ -42,6 +45,25 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         "--mods-path",
         type=Path,
         help="Override the Mods directory from config.",
+    )
+
+    preview_parser = subparsers.add_parser("preview", help="Build a read-only merge preview plan.")
+    preview_parser.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="Path to JSON config file. Defaults to ./config.json.",
+    )
+    preview_parser.add_argument(
+        "--mods-path",
+        type=Path,
+        help="Override the Mods directory from config.",
+    )
+    preview_parser.add_argument(
+        "--report-path",
+        type=Path,
+        default=Path("output/merge_preview.report.json"),
+        help="Where to write the JSON preview report. Defaults to ./output/merge_preview.report.json.",
     )
 
     return parser
@@ -77,12 +99,52 @@ def _scan_command(args: argparse.Namespace) -> int:
         for issue in result.recovery_issues:
             print(f"- {issue.path}: {issue.error}")
 
+    if result.path_issues:
+        print("")
+        print(f"Found {len(result.path_issues)} suspicious InventoryPreset paths:")
+        for issue in result.path_issues:
+            print(f"- {issue.path}: {issue.error}")
+
     if overlaps:
         print("")
         print("Overlaps:")
         for analysis in overlaps:
             _print_overlap(analysis)
 
+    return 0
+
+
+def _preview_command(args: argparse.Namespace) -> int:
+    config = _load_config(args.config)
+    mods_path = args.mods_path or _config_path(config, "mods_path")
+    if mods_path is None:
+        print("No mods_path provided. Set it in config.json or pass --mods-path.")
+        return 2
+
+    mods_path = mods_path.expanduser().resolve()
+    report_path = args.report_path.expanduser().resolve()
+    if _is_relative_to(report_path, mods_path):
+        print("Refusing to write preview report inside the scanned KCD2 Mods directory.")
+        return 2
+
+    result = scan_mods(mods_path)
+    plan = build_merge_plan(result)
+    report = merge_plan_to_report(plan)
+    write_merge_plan_report(plan, report_path)
+
+    print("Merge preview only. No KCD2 mod files were installed or modified.")
+    print(plan.runtime_semantics_warning)
+    print(f"Found {len(plan.safe_presets)} safe additive candidate presets")
+    print(f"Found {len(plan.unresolved_presets)} unresolved presets")
+    print(f"Found {len(plan.parse_issues)} parse errors")
+    print(f"Found {len(plan.path_issues)} suspicious InventoryPreset paths")
+    print(f"Wrote JSON preview report: {report_path}")
+    print("")
+    print("XML preview:")
+    print(report["would_generate_xml"])
+
+    if plan.unresolved_presets or plan.parse_issues:
+        return 1
     return 0
 
 
@@ -98,6 +160,14 @@ def _config_path(config: dict[str, Any], key: str) -> Path | None:
     if not value:
         return None
     return Path(value)
+
+
+def _is_relative_to(path: Path, possible_parent: Path) -> bool:
+    try:
+        path.relative_to(possible_parent)
+    except ValueError:
+        return False
+    return True
 
 
 def _print_overlap(analysis: PresetAnalysis) -> None:

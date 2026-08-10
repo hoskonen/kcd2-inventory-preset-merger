@@ -45,3 +45,13 @@ Supported child element types for this milestone:
 ## Runtime Validation
 
 Before merge generation is implemented, runtime PTF merge behavior must be validated in-game. See [docs/runtime-ptf-merge-semantics.md](docs/runtime-ptf-merge-semantics.md).
+
+## Merge Preview
+
+The preview command plans a possible compatibility patch and writes a JSON report, but it does not install or modify any KCD2 mod files:
+
+```powershell
+python -m kcd2_inventory_preset_merger preview --mods-path path/to/Mods
+```
+
+The unresolved runtime question remains: Cross-mod KCD2 PTF runtime behavior for repeated InventoryPreset patches has not yet been experimentally confirmed.
